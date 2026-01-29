@@ -75,8 +75,8 @@ class MelSpectrogramFeature(nn.Module):
                 n_mels=n_mels,
                 center=padding == "center",
                 power=1,
-                fmin=fmin,
-                fmax=fmax,
+                f_min=fmin,
+                f_max=fmax,
             )
 
     def forward(self, audio: torch.Tensor) -> torch.Tensor:
