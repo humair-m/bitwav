@@ -189,7 +189,7 @@ data:
   init_args:
     train_config:
       csv_path: data/libritts-r_train.csv
-      audio_root: /path/to/LibriTTS_R
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       chunk_hop_size: 34560
@@ -201,7 +201,7 @@ data:
 
     val_config:
       csv_path: data/libritts-r_dev.csv
-      audio_root: /path/to/LibriTTS_R
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       batch_size: 96
@@ -210,7 +210,7 @@ data:
 
     test_config:
       csv_path: data/libritts-r_test.csv
-      audio_root: /path/to/LibriTTS_R
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       batch_size: 96

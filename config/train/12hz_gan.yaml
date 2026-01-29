@@ -181,8 +181,8 @@ data:
   class_path: bitwav.data.datamodule.AudioDataModule
   init_args:
     train_config:
-      csv_path: data/libritts_train.csv
-      audio_root: /path/to/LibriTTS
+      csv_path: data/ljspeech/metadata.csv
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       chunk_hop_size: 34560
@@ -193,8 +193,8 @@ data:
       drop_last: true
 
     val_config:
-      csv_path: data/libritts_dev.csv
-      audio_root: /path/to/LibriTTS
+      csv_path: data/ljspeech/metadata.csv
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       batch_size: 96
@@ -202,8 +202,8 @@ data:
       pin_memory: true
 
     test_config:
-      csv_path: data/libritts_test.csv
-      audio_root: /path/to/LibriTTS
+      csv_path: data/ljspeech/metadata.csv
+      audio_root: data/ljspeech
       sample_rate: 24000
       chunk_size: 138240
       batch_size: 96
