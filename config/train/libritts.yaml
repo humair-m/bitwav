@@ -1,0 +1,172 @@
+seed_everything: 42
+
+trainer:
+  accelerator: auto
+  strategy: ddp
+  devices: auto
+  precision: bf16-mixed
+  max_steps: 500000
+  default_root_dir: exp/libritts
+  log_every_n_steps: 50
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        filename: "step={step}-loss={val/loss:.4f}"
+        monitor: val/loss
+        mode: min
+        save_last: true
+        auto_insert_metric_name: false
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+    - class_path: lightning.pytorch.callbacks.ModelSummary
+      init_args:
+        max_depth: 3
+
+model:
+  class_path: bitwav.pipeline.BitwavPipeline
+  init_args:
+    ssl_feature_extractor:
+      class_path: bitwav.module.ssl_extractor.SSLFeatureExtractor
+      init_args:
+        model_name: wavlm_base_plus
+        output_layer: 9
+        sample_rate: 24000
+
+    local_encoder:
+      class_path: bitwav.module.transformer.Transformer
+      init_args:
+        dim: 768
+        n_layers: 6
+        n_heads: 12
+        window_size: 125
+        use_rope: true
+        rope_theta: 10000.0
+        max_seq_len: 512
+        use_flash_attention: true
+
+    local_quantizer:
+      class_path: bitwav.module.fsq.FiniteScalarQuantizer
+      init_args:
+        input_dim: 768
+        output_dim: 768
+        levels: [8, 8, 8, 5, 5]
+
+    feature_decoder:
+      class_path: bitwav.module.transformer.Transformer
+      init_args:
+        dim: 768
+        n_layers: 6
+        n_heads: 12
+        window_size: 125
+        use_rope: true
+        rope_theta: 10000.0
+        max_seq_len: 512
+        use_flash_attention: true
+
+    global_encoder:
+      class_path: bitwav.module.global_encoder.GlobalEncoder
+      init_args:
+        input_channels: 768
+        output_channels: 128
+        num_layers: 4
+        dim: 384
+        intermediate_dim: 1152
+
+    mel_prenet:
+      class_path: bitwav.module.transformer.Transformer
+      init_args:
+        dim: 768
+        output_dim: 512
+        n_layers: 6
+        n_heads: 12
+        window_size: 65
+        use_rope: true
+        rope_theta: 10000.0
+        max_seq_len: 512
+        use_flash_attention: true
+
+    mel_decoder:
+      class_path: bitwav.module.transformer.Transformer
+      init_args:
+        dim: 512
+        output_dim: 100
+        n_layers: 6
+        n_heads: 8
+        window_size: 65
+        use_rope: true
+        rope_theta: 10000.0
+        max_seq_len: 512
+        adanorm_condition_dim: 128
+        use_adaln_zero: true
+        use_flash_attention: true
+
+    mel_postnet:
+      class_path: bitwav.module.postnet.PostNet
+      init_args:
+        input_channels: 100
+        channels: 256
+        kernel_size: 7
+        num_layers: 4
+        use_layer_norm: true
+
+    model_config:
+      local_ssl_layers: [6, 9]
+      global_ssl_layers: [1, 2]
+      normalize_ssl_features: true
+      downsample_factor: 2
+      mel_upsample_factor: 4
+      use_conv_downsample: true
+      mel_interpolation_mode: linear
+      sample_rate: 24000
+      n_fft: 1024
+      hop_length: 256
+      n_mels: 100
+      padding: center
+
+    pipeline_config:
+      train_feature: true
+      train_mel: true
+      audio_length: 138240
+      lr: 2e-4
+      weight_decay: 1e-4
+      betas: [0.9, 0.99]
+      gradient_clip_val: 1.0
+      warmup_percent: 0.1
+      lr_div_factor: 10.0
+      lr_final_div_factor: 1.0
+      anneal_mode: cos
+      feature_l1_weight: 0.0
+      feature_l2_weight: 30.0
+      mel_l1_weight: 30.0
+      mel_l2_weight: 0.0
+      adv_weight: 0.0
+      feature_matching_weight: 0.0
+      use_discriminator: false
+      log_mel_samples: 10
+      use_torch_compile: true
+
+data:
+  class_path: bitwav.data.datamodule.AudioDataModule
+  init_args:
+    train_config:
+      csv_path: data/libritts/metadata.csv
+      audio_root: data/libritts
+      sample_rate: 24000
+      chunk_size: 138240
+      chunk_hop_size: 34560
+      batch_size: 64
+      num_workers: 8
+      pin_memory: true
+      persistent_workers: true
+      shuffle: true
+      drop_last: true
+    val_config:
+      csv_path: data/libritts/metadata.csv
+      audio_root: data/libritts
+      sample_rate: 24000
+      chunk_size: 138240
+      batch_size: 64
+      num_workers: 8
+      pin_memory: true
+      persistent_workers: true

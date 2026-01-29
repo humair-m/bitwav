@@ -399,7 +399,7 @@ class BitwavPipeline(L.LightningModule):
 
     def on_validation_end(self):
         """Logs validation spectrograms and audio to the logger (TB/WandB)."""
-        if self.validation_examples:
+        if self.validation_examples and self.global_rank == 0:
             for i, (m_real, m_gen, a_real, a_gen) in enumerate(self.validation_examples):
                 f_real = self._get_spectrogram_plot(m_real)
                 f_gen = self._get_spectrogram_plot(m_gen)
@@ -408,7 +408,13 @@ class BitwavPipeline(L.LightningModule):
                 if a_gen is not None:
                     self._log_audio(f"val/{i}_audio_real", a_real.numpy())
                     self._log_audio(f"val/{i}_audio_gen", a_gen.numpy())
-            self.validation_examples = []
+                
+                # Close figures to save memory
+                from matplotlib import pyplot as plt
+                plt.close(f_real)
+                plt.close(f_gen)
+            
+        self.validation_examples = []
         self.vocoder = None
 
     def _log_figure(self, tag, fig):
