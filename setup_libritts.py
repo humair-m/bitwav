@@ -3,7 +3,7 @@ import tarfile
 import urllib.request
 from pathlib import Path
 import csv
-import torchaudio
+import soundfile as sf
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
 
@@ -23,12 +23,13 @@ def download_file(url, dest_path):
 
 def process_wav(wav_path, output_path):
     try:
-        info = torchaudio.info(str(wav_path))
+        import soundfile as sf
+        info = sf.info(str(wav_path))
         return {
             "audio_id": wav_path.stem,
             "path": str(wav_path.relative_to(output_path)),
-            "length": info.num_frames,
-            "sample_rate": info.sample_rate
+            "length": info.frames,
+            "sample_rate": info.samplerate
         }
     except Exception as e:
         print(f"Error processing {wav_path}: {e}")

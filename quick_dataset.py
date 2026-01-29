@@ -3,7 +3,7 @@ import tarfile
 import urllib.request
 from pathlib import Path
 import csv
-import torchaudio
+import soundfile as sf
 from tqdm import tqdm
 
 def download_file(url, dest_path):
@@ -42,12 +42,12 @@ def setup_ljspeech(output_dir="data/ljspeech"):
         writer.writeheader()
         
         for wav_path in tqdm(wav_files, desc="Processing wavs"):
-            info = torchaudio.info(str(wav_path))
+            info = sf.info(str(wav_path))
             writer.writerow({
                 "audio_id": wav_path.stem,
                 "path": str(wav_path.relative_to(output_path)),
-                "length": info.num_frames,
-                "sample_rate": info.sample_rate
+                "length": info.frames,
+                "sample_rate": info.samplerate
             })
             
     print(f"Dataset setup complete. Metadata saved to {metadata_path}")
