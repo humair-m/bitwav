@@ -16,6 +16,9 @@ dependencies = [
   "vocos",
 ]
 
+[project.urls]
+Repository = "https://github.com/humair-m/bitwav"
+
 [project.optional-dependencies]
 train = [
   "einops",

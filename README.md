@@ -35,13 +35,13 @@ bitwav/
 ### For Inference
 
 ```bash
-pip install git+https://github.com/your-username/bitwav
+pip install git+https://github.com/humair-m/bitwav
 ```
 
 ### For Training
 
 ```bash
-git clone https://github.com/your-username/bitwav
+git clone https://github.com/humair-m/bitwav
 cd bitwav
 pip install -e ".[train]"
 ```
